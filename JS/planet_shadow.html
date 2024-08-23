@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="myCanvas" width="600" height="400" style="border:1px solid #d3d3d3;"></canvas>
+
+    <script>
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        const width = 600;
+        const height = 400;
+
+        const luz = [580, 15]; //x1, y1
+        const obj = [50, 50]; //x2, y2
+
+        var luzXi = luz[0] - 12;
+        var luzYi = luz[1] - 12;
+        var objXi = obj[0] - 12;
+        var objYi = obj[1] - 12;
+
+        var luzXd = luz[0] + 12;
+        var luzYd = luz[1] + 12;
+        var objXd = obj[0] + 12;
+        var objYd = obj[1] + 12;
+
+        var fx = 0;
+        var mx = 0;
+        var interY = 0;
+        var pendienteI = 0;
+        var pendienteD = 0;
+        var move = 0;
+        var interX = 0;
+
+        window.addEventListener("keydown",(e)=>{
+            var key = e.keyCode;
+            if (key == 39) {
+                obj[0] += 1;
+            }  else if(key == 37){
+                obj[0] -= 1;
+            } else if (key == 38) {
+                obj[1] -= 1;
+            } else if (key == 40) {
+                obj[1] += 1;
+            }
+        });
+
+        var inter = setInterval(()=>{
+
+            ctx.clearRect(0, 0, 600, 400);
+
+            objXi = obj[0] - 12;
+            objXd = obj[0] + 12;
+
+            objYi = obj[1] - 12;
+            objYd = obj[1] + 12;
+
+            //luz
+            ctx.beginPath();
+            ctx.arc(luz[0], luz[1], 15, 0, 2 * Math.PI, true);
+            ctx.closePath();
+            ctx.stroke();
+
+            if (objXd > width) {
+                obj[0] = width - 15;
+            } else if (objXi < 0) {
+                obj[0] = 15;
+            }
+
+            if (objYd > height) {
+                obj[1] = height - 15;
+            } else if (objYi < 0) {
+                obj[1] = 15;
+            }
+
+            //obj
+            ctx.fillStyle = "#c82124"; //red
+            ctx.beginPath();
+            ctx.arc(obj[0], obj[1], 15, 0, 2 * Math.PI, true);
+            ctx.closePath();
+            ctx.fill();
+
+            //CALCULAR SOMBRA IZQUIERDA ======
+            //1) PENDIENTE (y2 - y1)/(x2 - x1):
+            if (objXi >= luzXi) {
+                //console.log(objXi);
+                interX = objXi + 1;
+                interY = height;
+            } else {
+                pendienteI = ((objYi) - (luzYi)) / ((objXi) - (luzXi)); //12: 4 * pi | pendiente = mx
+                
+                //3) INTERSECCIÓN EJE Y f(x) = mx + b:
+                fx = 3;
+                mx = pendienteI * luzXi;
+
+                interY = (mx * - 1) + fx; // inter = b
+                interX = 0;
+            }
+            
+
+            ctx.beginPath();
+            ctx.moveTo(objXi, objYi);
+            ctx.lineTo(interX, interY);
+            ctx.closePath();
+            ctx.stroke();
+            //=============
+
+            //CALCULAR SOMBRA DERECHA =========
+            //1) PENDIENTE (y2 - y1)/(x2 - x1):
+            if (objXd >= luzXd) {
+                interX = objXd + 1;
+                interY = height;
+            } else {
+                pendienteD = ((objYd) - (luzYd)) / ((objXd) - (luzXd));
+
+                //3) INTERSECCION EJE Y f(x) = mx + b:
+
+                fx = 27;
+                mx = pendienteD * luzXd;
+
+                interY = (mx * - 1) + fx;
+                interX = 0;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(objXd, objYd);
+            ctx.lineTo(interX, interY);
+            ctx.closePath();
+            ctx.stroke();
+
+            //CLOSE
+            // var grd = ctx.createRadialGradient(obj[0], obj[1], 5, interX, interY, 100);
+            // ctx.beginPath();
+            // grd.addColorStop(0,"red");
+            // grd.addColorStop(1,"black");
+
+            // // Fill with gradient
+            // ctx.fillStyle = grd;
+            // ctx.closePath();
+            // ctx.fillRect(0,0,600,400);
+
+        },1000/60);
+    </script>
+</body>
+</html>
